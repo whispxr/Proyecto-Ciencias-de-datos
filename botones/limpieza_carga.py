@@ -35,3 +35,7 @@ def cargar_limpiar_datos(archivo, umbral_nulos=0.5):
     df = df.dropna()
 
     return df
+
+
+
+#Modificar la funcion de limpieza para que su formato de limpieza tenga justificacion y no genere acciones que modifiquen los resultados del dataset
