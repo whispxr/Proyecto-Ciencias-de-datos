@@ -53,12 +53,14 @@ class AdminPanelApp(tk.Tk):
         self.content_container = ttk.Frame(self, style="Content.TFrame")
         self.content_container.pack(side="right", expand=True, fill="both", padx=20, pady=20)
 
-        self.status = ttk.Label(self.content_container, text="Estado: Esperando acción del usuario...", style="Status.TLabel")
-        self.status.pack(side="top", anchor="w", pady=(0, 10))
 
         self.content = ttk.Frame(self.content_container, style="Content.TFrame")
         self.content.pack(expand=True, fill="both")
         self.show_text("Bienvenido al sistema de tasación de viviendas")
+
+# Label de la accion que se esta realizando, se puede modificar con el uso de cada boton para que sea mas intuitiva :]
+        self.status = ttk.Label(self.content_container, text="Estado: Esperando acción del usuario...", style="Status.TLabel")
+        self.status.pack(side="top", anchor="w", pady=(0, 10))
 
     def clear_content(self):
         for widget in self.content.winfo_children():
@@ -70,6 +72,7 @@ class AdminPanelApp(tk.Tk):
         label = ttk.Label(self.content, text=texto, style="Header.TLabel", wraplength=800, justify="center")
         label.pack(expand=True, pady=40)
 
+# ======= mostrar tabla =======
 
     def show_table(self, df):
         self.clear_content()
@@ -94,3 +97,5 @@ class AdminPanelApp(tk.Tk):
             if i >= 100:
                 break
             treeview.insert("", "end", values=row)
+
+# ============================
