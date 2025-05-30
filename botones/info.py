@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 import pandas as pd
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 
 def crear_boton_info(app, sidebar):
     boton = ttk.Button(
@@ -24,7 +26,7 @@ def mostrar_info_dataframe(app):
 
     df = app.datos_procesados
 
-
+    # Pestaña Info general
     frame_info = ttk.Frame(notebook)
     notebook.add(frame_info, text="Info")
 
@@ -49,7 +51,7 @@ def mostrar_info_dataframe(app):
     scroll_info.pack(side="right", fill="y")
     tree_info.configure(yscrollcommand=scroll_info.set)
 
-    #detalle variable categorica
+    # Detalle variable categórica al seleccionar
     def on_info_select(event):
         selected_item = tree_info.selection()
         if selected_item:
@@ -60,8 +62,7 @@ def mostrar_info_dataframe(app):
 
     tree_info.bind("<<TreeviewSelect>>", on_info_select)
 
-
-
+    # Pestaña Describe
     frame_desc = ttk.Frame(notebook)
     notebook.add(frame_desc, text="Describe")
 
@@ -82,7 +83,39 @@ def mostrar_info_dataframe(app):
     scroll_desc.pack(side="right", fill="y")
     tree_desc.configure(yscrollcommand=scroll_desc.set)
 
+    # Pestaña Normalización (gráficos)
+    if hasattr(app, 'datos_normalizados') and app.datos_normalizados is not None:
+        frame_norm = ttk.Frame(notebook)
+        notebook.add(frame_norm, text="Normalización")
+
+        # Selección explícita de columnas a normalizar
+        columnas_normalizar = ["Precio", "Metros Totales", "Metros Útiles", "Año Construcción"]
+
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+        # Boxplot antes de normalizar
+        df[columnas_normalizar].boxplot(ax=axes[0])
+        axes[0].set_title("Antes de normalizar")
+        axes[0].tick_params(axis='x', rotation=45)
+
+        # Boxplot después de normalizar
+        app.datos_normalizados[columnas_normalizar].boxplot(ax=axes[1])
+        axes[1].set_title("Después de normalizar")
+        axes[1].tick_params(axis='x', rotation=45)
+
+        fig.tight_layout()
+
+        canvas = FigureCanvasTkAgg(fig, master=frame_norm)
+        canvas.draw()
+        canvas.get_tk_widget().pack(expand=True, fill='both')
+    else:
+        frame_norm = ttk.Frame(notebook)
+        notebook.add(frame_norm, text="Normalización")
+        label = ttk.Label(frame_norm, text="No se encontraron datos normalizados.\nPrimero realizá la normalización.")
+        label.pack(padx=20, pady=20)
+
     app.status.config(text="Mostrando información y estadísticas del DataFrame")
+
 
 def mostrar_detalle_categorica(df, columna):
     top = tk.Toplevel()
@@ -93,7 +126,6 @@ def mostrar_detalle_categorica(df, columna):
 
     conteo = series.value_counts()
     porcentaje = series.value_counts(normalize=True).mul(100).round(2)
-
 
     detalle_df = pd.DataFrame({
         'Categoría': conteo.index,

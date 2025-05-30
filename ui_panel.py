@@ -17,7 +17,9 @@ class AdminPanelApp(tk.Tk):
         self.title("🧠 Sistema de Tasación de Viviendas")
         self.geometry("1000x600")
         self.configure(bg="#e9ecef")
+        self.datos_originales = None
         self.datos_procesados = None
+        self.datos_normalizados = None  
 
         self.setup_styles()
         self.create_widgets()
