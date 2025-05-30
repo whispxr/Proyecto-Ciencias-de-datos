@@ -8,6 +8,7 @@ from botones.analisis import crear_boton_analisis
 from botones.entrenamiento import crear_boton_entrenamiento
 from botones.seleccion import crear_boton_seleccion
 from botones.visualizacion import crear_boton_visualizacion
+from botones.info import crear_boton_info
 
 
 class AdminPanelApp(tk.Tk):
@@ -42,6 +43,7 @@ class AdminPanelApp(tk.Tk):
 #====== CARGAR BOTONES ======
 
         crear_boton_carga(self, sidebar)
+        crear_boton_info(self, sidebar)
         crear_boton_analisis(self, sidebar)
         crear_boton_entrenamiento(self, sidebar)
         crear_boton_seleccion(self, sidebar)
@@ -74,28 +76,73 @@ class AdminPanelApp(tk.Tk):
 
 # ======= mostrar tabla =======
 
-    def show_table(self, df):
+    def show_data_tabs(self):
         self.clear_content()
-        tree_frame = ttk.Frame(self.content)
+        notebook = ttk.Notebook(self.content)
+        notebook.pack(expand=True, fill="both")
+
+        # Pestaña datos originales
+        frame_original = ttk.Frame(notebook)
+        notebook.add(frame_original, text="Datos Originales")
+
+        # Pestaña datos limpios
+        frame_limpios = ttk.Frame(notebook)
+        notebook.add(frame_limpios, text="Datos Limpios")
+
+        # Mostrar tabla en cada pestaña
+        self.show_table(self.datos_originales, frame_original)
+        self.show_table(self.datos_procesados, frame_limpios)
+
+
+    def show_table(self, df, parent=None, max_rows=None):
+        """
+        Muestra el DataFrame en un Treeview.
+        Si parent es None usa self.content.
+        max_rows limita filas mostradas (None = sin límite).
+        """
+
+        if parent is None:
+            parent = self.content
+
+        # Limpiar contenido previo en ese frame (por si se reutiliza)
+        for widget in parent.winfo_children():
+            widget.destroy()
+
+        tree_frame = ttk.Frame(parent)
         tree_frame.pack(expand=True, fill="both")
 
-        tree_scroll = ttk.Scrollbar(tree_frame)
-        tree_scroll.pack(side="right", fill="y")
+        tree_scroll_y = ttk.Scrollbar(tree_frame, orient="vertical")
+        tree_scroll_y.pack(side="right", fill="y")
 
-        treeview = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll.set)
+        tree_scroll_x = ttk.Scrollbar(tree_frame, orient="horizontal")
+        tree_scroll_x.pack(side="bottom", fill="x")
+
+        treeview = ttk.Treeview(tree_frame, yscrollcommand=tree_scroll_y.set, xscrollcommand=tree_scroll_x.set)
         treeview.pack(expand=True, fill="both")
-        tree_scroll.config(command=treeview.yview)
+
+        tree_scroll_y.config(command=treeview.yview)
+        tree_scroll_x.config(command=treeview.xview)
 
         treeview["columns"] = list(df.columns)
         treeview["show"] = "headings"
 
         for col in df.columns:
             treeview.heading(col, text=col)
-            treeview.column(col, width=100, anchor="center")
+            treeview.column(col, width=120, anchor="center")
 
-        for i, row in enumerate(df.itertuples(index=False)):
-            if i >= 100:
+        filas = df.itertuples(index=False)
+        count = 0
+        for row in filas:
+            if max_rows is not None and count >= max_rows:
                 break
             treeview.insert("", "end", values=row)
+            count += 1
 
+        # Agregar botón para mostrar todas filas si hay límite
+        if max_rows is not None and len(df) > max_rows:
+            def mostrar_todas():
+                self.show_table(df, parent, max_rows=None)
+
+            btn_mostrar_todo = ttk.Button(parent, text=f"Mostrar todas las filas ({len(df)})", command=mostrar_todas)
+            btn_mostrar_todo.pack(pady=5)
 # ============================
