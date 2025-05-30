@@ -12,6 +12,8 @@ def normalizar_datos(df_limpio):
         'Año Construcción'
     ]
 
+    #normliza esas 3 columnas nada mas, pq ID es una variable que no aporta información para la normalización, baños y habitacion son variables discretas, etc
+
     # Verificamos que existan en el DataFrame
     columnas_a_normalizar = [col for col in columnas_a_normalizar if col in df.columns]
 
